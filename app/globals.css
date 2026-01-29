@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  @apply bg-skywash text-slate-900 antialiased;
+}
+
+button:focus-visible,
+a:focus-visible {
+  @apply outline-none ring-2 ring-indigo-500 ring-offset-2 ring-offset-white;
+}
+
+.app-gradient {
+  background: radial-gradient(circle at top, rgba(255, 255, 255, 0.6) 0%, rgba(233, 241, 255, 1) 55%, rgba(214, 230, 255, 1) 100%);
+}
