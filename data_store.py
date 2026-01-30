@@ -179,13 +179,12 @@ def build_image_index(paintings_dir: Path) -> Dict[str, Dict[str, str]]:
     for file in paintings_dir.iterdir():
         if not file.is_file() or file.name.startswith("."):
             for row in rows:
-                    # Ensure valid row
-    if not isinstance(row, dict):
-        pass
-    else:
-        record = PaintingRecord(
-            id=str(row.get(id_field, "")),
-            set_id=str(row.get(set_field, "")).strip(),
+                if not isinstance(row, dict):
+                    continue
+            else:
+                record = PaintingRecord(
+                    id=str(row.get(id_field, "")),
+                    set_id=str(row.get(set_field, "")).strip(),
             title=str(row.get(title_field, "")).strip(),
             artist=str(row.get(artist_field, "")).strip(),
             year=str(row.get(year_field, "")).strip() if year_field else None,
