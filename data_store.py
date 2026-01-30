@@ -179,9 +179,8 @@ def build_image_index(paintings_dir: Path) -> Dict[str, Dict[str, str]]:
     for file in paintings_dir.iterdir():
         if not file.is_file() or file.name.startswith("."):
             for row in rows:
-    # Defensive: ensure row is dict-like
-    if not isinstance(row, dict):
-        continue
+                if not isinstance(row, dict):
+                    continue
 
     # Must have an ID
     if id_field not in row or not row[id_field]:
