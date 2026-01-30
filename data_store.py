@@ -178,44 +178,16 @@ def build_image_index(paintings_dir: Path) -> Dict[str, Dict[str, str]]:
 
     for file in paintings_dir.iterdir():
         if not file.is_file() or file.name.startswith("."):
-            for row in rows:
-                if not isinstance(row, dict):
-                    continue
-            else:
-                record = PaintingRecord(
-                    id=str(row.get(id_field, "")),
-                    set_id=str(row.get(set_field, "")).strip(),
-            title=str(row.get(title_field, "")).strip(),
-            artist=str(row.get(artist_field, "")).strip(),
-            year=str(row.get(year_field, "")).strip() if year_field else None,
-            image_filename=None,
-            metadata=row,
-        )
-        records.append(record)
+            continue
+        filename = file.name
+        stem = file.stem
+        slug = slugify(stem)
+        index["filename"][filename.lower()] = filename
+        index["stem"][stem.lower()] = filename
+        if slug:
+            index["slug"][slug] = filename
 
-    # Must have an ID
-     if id_field not in row or not row[id_field]:
-        continue
-
-    image_filename = resolve_image_filename(
-        row,
-        paintings_dir,
-        id_field,
-        title_field,
-    )
-
-    record = PaintingRecord(
-        id=str(row[id_field]),
-        set_id=str(row.get(set_field, "")).strip(),
-        title=str(row.get(title_field, "")).strip(),
-        artist=str(row.get(artist_field, "")).strip(),
-        year=str(row.get(year_field, "")).strip() if year_field else None,
-        image_filename=image_filename,
-        metadata=row,
-    )
-
-    records.append(record)
-
+    return index
 
 
 def resolve_image_filename(
