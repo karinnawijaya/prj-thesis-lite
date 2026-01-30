@@ -194,8 +194,8 @@ def build_image_index(paintings_dir: Path) -> Dict[str, Dict[str, str]]:
         records.append(record)
 
     # Must have an ID
-    if id_field not in row or not row[id_field]:
-        
+     if id_field not in row or not row[id_field]:
+        continue
 
     image_filename = resolve_image_filename(
         row,
@@ -257,10 +257,10 @@ def build_metadata(row: Dict[str, Any], exclude: Iterable[Optional[str]]) -> Dic
     metadata: Dict[str, Any] = {}
     for key, value in row.items():
         if key in excluded:
-         
+            continue
         cleaned = normalize_value(value)
         if cleaned is None:
-            
+            continue
         metadata[key] = cleaned
     return metadata
 
