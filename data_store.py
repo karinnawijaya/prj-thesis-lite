@@ -46,43 +46,6 @@ class PaintingSet:
     set_id: str
     paintings: List[PaintingRecord]
 
-def resolve_image_filename(row: dict, paintings_dir):
-    """
-    Try to resolve an image filename for a painting.
-    Priority:
-    1) Explicit filename/path field from CSV
-    2) Match by ID
-    3) Fallback: None
-    """
-    possible_keys = [
-        "image",
-        "image_file",
-        "filename",
-        "file",
-        "img",
-        "image_filename",
-        "image_path",
-    ]
-
-    # 1) CSV-provided filename
-    for key in possible_keys:
-        value = row.get(key)
-        if value:
-            candidate = paintings_dir / value
-            if candidate.exists():
-                return value
-
-    # 2) Try matching by ID
-    painting_id = str(row.get("id", "")).strip()
-    if painting_id:
-        for ext in [".jpg", ".jpeg", ".png", ".webp"]:
-            candidate = paintings_dir / f"{painting_id}{ext}"
-            if candidate.exists():
-                return candidate.name
-
-    # 3) Nothing found
-    return None
-
 
 class PaintingStore:
     def __init__(self, records: Dict[str, PaintingRecord]) -> None:
@@ -214,15 +177,66 @@ def build_image_index(paintings_dir: Path) -> Dict[str, Dict[str, str]]:
         return index
 
     for file in paintings_dir.iterdir():
-        if not file.is_file():
+                if not file.is_file():
             continue
-        
         filename = file.name
         stem = file.stem
-        slug = stem.lower().replace(" ", "_")
-        
-        index["filename"][filename] = filename
-        index["stem"][stem] = filename
-        index["slug"][slug] = filename
-    
+        slug = slugify(stem)
+        index["filename"][filename.lower()] = filename
+        index["stem"][stem.lower()] = filename
+        if slug:
+            index["slug"][slug] = filename
+
     return index
+
+
+def resolve_image_filename(
+    image_value: Optional[str],
+    painting_id: str,
+    title: str,
+    image_index: Dict[str, Dict[str, str]],
+) -> Optional[str]:
+    for candidate in (image_value, painting_id, title):
+        resolved = match_image_candidate(candidate, image_index)
+        if resolved:
+            return resolved
+    return None
+
+
+def match_image_candidate(
+    candidate: Optional[str], image_index: Dict[str, Dict[str, str]]
+) -> Optional[str]:
+    if not candidate:
+        return None
+    raw_name = Path(str(candidate)).name
+    filename = image_index["filename"].get(raw_name.lower())
+    if filename:
+        return filename
+
+    stem = Path(raw_name).stem
+    filename = image_index["stem"].get(stem.lower())
+    if filename:
+        return filename
+
+    slug = slugify(stem)
+    if slug:
+        return image_index["slug"].get(slug)
+    return None
+
+
+def build_metadata(row: Dict[str, Any], exclude: Iterable[Optional[str]]) -> Dict[str, Any]:
+    excluded = {key for key in exclude if key}
+    metadata: Dict[str, Any] = {}
+    for key, value in row.items():
+        if key in excluded:
+            continue
+        cleaned = normalize_value(value)
+        if cleaned is None:
+            continue
+        metadata[key] = cleaned
+    return metadata
+
+
+def slugify(value: str) -> str:
+    cleaned = "".join(ch.lower() if ch.isalnum() else " " for ch in value)
+    return "-".join(part for part in cleaned.split() if part)
