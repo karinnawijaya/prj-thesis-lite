@@ -30,12 +30,13 @@ export default function ResultPage() {
 
     try {
       const response = await apiFetch<CompareResponse>("/api/compare", {
-        method: "POST",
+  method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           painting_a_id: selectedIds[0],
           painting_b_id: selectedIds[1],
         }),
-      });
+});
       setData(response);
     } catch (err) {
       setError((err as Error).message);
