@@ -46,6 +46,43 @@ class PaintingSet:
     set_id: str
     paintings: List[PaintingRecord]
 
+def resolve_image_filename(row: dict, paintings_dir):
+    """
+    Try to resolve an image filename for a painting.
+    Priority:
+    1) Explicit filename/path field from CSV
+    2) Match by ID
+    3) Fallback: None
+    """
+    possible_keys = [
+        "image",
+        "image_file",
+        "filename",
+        "file",
+        "img",
+        "image_filename",
+        "image_path",
+    ]
+
+    # 1) CSV-provided filename
+    for key in possible_keys:
+        value = row.get(key)
+        if value:
+            candidate = paintings_dir / value
+            if candidate.exists():
+                return value
+
+    # 2) Try matching by ID
+    painting_id = str(row.get("id", "")).strip()
+    if painting_id:
+        for ext in [".jpg", ".jpeg", ".png", ".webp"]:
+            candidate = paintings_dir / f"{painting_id}{ext}"
+            if candidate.exists():
+                return candidate.name
+
+    # 3) Nothing found
+    return None
+
 
 class PaintingStore:
     def __init__(self, records: Dict[str, PaintingRecord]) -> None:
