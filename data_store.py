@@ -178,3 +178,14 @@ def build_image_index(paintings_dir: Path) -> Dict[str, Dict[str, str]]:
 
     for file in paintings_dir.iterdir():
         if not file.is_file():
+            continue
+        
+        filename = file.name
+        stem = file.stem
+        slug = stem.lower().replace(" ", "_")
+        
+        index["filename"][filename] = filename
+        index["stem"][stem] = filename
+        index["slug"][slug] = filename
+    
+    return index
