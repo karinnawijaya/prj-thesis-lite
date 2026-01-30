@@ -179,12 +179,24 @@ def build_image_index(paintings_dir: Path) -> Dict[str, Dict[str, str]]:
     for file in paintings_dir.iterdir():
         if not file.is_file() or file.name.startswith("."):
             for row in rows:
-                if not isinstance(row, dict):
-                    continue
+                    # Ensure valid row
+    if not isinstance(row, dict):
+        pass
+    else:
+        record = PaintingRecord(
+            id=str(row.get(id_field, "")),
+            set_id=str(row.get(set_field, "")).strip(),
+            title=str(row.get(title_field, "")).strip(),
+            artist=str(row.get(artist_field, "")).strip(),
+            year=str(row.get(year_field, "")).strip() if year_field else None,
+            image_filename=None,
+            metadata=row,
+        )
+        records.append(record)
 
     # Must have an ID
     if id_field not in row or not row[id_field]:
-        continue
+        
 
     image_filename = resolve_image_filename(
         row,
@@ -246,10 +258,10 @@ def build_metadata(row: Dict[str, Any], exclude: Iterable[Optional[str]]) -> Dic
     metadata: Dict[str, Any] = {}
     for key, value in row.items():
         if key in excluded:
-            continue
+         
         cleaned = normalize_value(value)
         if cleaned is None:
-            continue
+            
         metadata[key] = cleaned
     return metadata
 
