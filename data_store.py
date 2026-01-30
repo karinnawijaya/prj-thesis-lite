@@ -177,8 +177,13 @@ def build_image_index(paintings_dir: Path) -> Dict[str, Dict[str, str]]:
         return index
 
     for file in paintings_dir.iterdir():
-                if not file.is_file():
-            continue
+        if not file.is_file() or file.name.startswith("."):
+            for row in rows:
+    if not isinstance(row, dict):
+        continue
+
+    if not row.get(id_field):
+        continue
         filename = file.name
         stem = file.stem
         slug = slugify(stem)
